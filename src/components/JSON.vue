@@ -72,6 +72,7 @@ const austen = computed(() =>
     </section>
 
     <section class="lab-section">
+      
       <h2>Working with JSON Objects</h2>
       <p>Our <code>bookstores.json</code> is a JSON object.</p>
 
