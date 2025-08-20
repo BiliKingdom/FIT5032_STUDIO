@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import JSONLab from './components/JSON.vue'
 import Form from './components/Form.vue';
 
