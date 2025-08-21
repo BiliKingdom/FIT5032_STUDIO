@@ -86,7 +86,7 @@
     </form>
 
     <!-- Submitted Cards -->
-    <div class="row mt-5" v-if="submittedCards.length">
+    <!-- <div class="row mt-5" v-if="submittedCards.length">
       <div class="d-flex flex-wrap justify-content-start">
         <div
           v-for="(card, index) in submittedCards"
@@ -106,7 +106,30 @@
           </ul>
         </div>
       </div>
-    </div>
+    </div> -->
+
+
+
+    <!-- DataTable -->
+    <DataTable
+      v-if="submittedCards.length"
+      :value="submittedCards"
+      class="mt-5"
+      responsiveLayout="scroll"
+      stripedRows
+    >
+      <Column field="username" header="Username" />
+      <Column field="password" header="Password" />
+      <Column header="Resident">
+        <template #body="slotProps">
+          {{ slotProps.data.isAustralian ? 'Yes' : 'No' }}
+        </template>
+      </Column>
+      <Column field="gender" header="Gender" />
+      <Column field="reason" header="Reason" />
+    </DataTable>
+
+
   </div>
 </template>
 
