@@ -37,13 +37,12 @@
         <label for="email" class="form-label">Email</label>
         <input
           type="email"
-          class="form-control"
           id="email"
-          v-model="formData.email"
-          @blur="() => validateEmail(true)"
-          @input="() => validateEmail(false)"
+          class="form-control"
+          v-model="email"
+          v-bind="emailAttrs"
         />
-        <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+        <div v-if="emailError" class="text-danger">{{ emailError }}</div>
       </div>
 
       <!-- Age -->
@@ -51,14 +50,14 @@
         <label for="age" class="form-label">Age</label>
         <input
           type="number"
-          class="form-control"
           id="age"
-          v-model="formData.age"
-          @blur="() => validateAge(true)"
-          @input="() => validateAge(false)"
+          class="form-control"
+          v-model="age"
+          v-bind="ageAttrs"
         />
-        <div v-if="errors.age" class="text-danger">{{ errors.age }}</div>
+        <div v-if="ageError" class="text-danger">{{ ageError }}</div>
       </div>
+
 
 
       <!-- Resident + Gender -->
@@ -223,33 +222,54 @@ const validateReason = (blur) => {
 
 
 
-const validateEmail = (blur) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(formData.value.email)) {
-    if (blur) errors.value.email = 'Please enter a valid email address.'
-  } else {
-    errors.value.email = null
-  }
-}
+// const validateEmail = (blur) => {
+//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+//   if (!emailRegex.test(formData.value.email)) {
+//     if (blur) errors.value.email = 'Please enter a valid email address.'
+//   } else {
+//     errors.value.email = null
+//   }
+// }
 
-const validateAge = (blur) => {
-  const age = Number(formData.value.age)
-  if (!age || isNaN(age) || age < 18 || age > 100) {
-    if (blur) errors.value.age = 'Age must be a number between 18 and 100.'
-  } else {
-    errors.value.age = null
+// const validateAge = (blur) => {
+//   const age = Number(formData.value.age)
+//   if (!age || isNaN(age) || age < 18 || age > 100) {
+//     if (blur) errors.value.age = 'Age must be a number between 18 and 100.'
+//   } else {
+//     errors.value.age = null
+//   }
+// }
+
+
+
+
+// createValidator insstead of validate functions
+const [email, emailError, emailAttrs] = createValidator(
+  '',
+  (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? true : 'Please enter a valid email address.'
+)
+
+const [age, ageError, ageAttrs] = createValidator(
+  '',
+  (value) => {
+    const num = Number(value)
+    return num >= 18 && num <= 100
+      ? true
+      : 'Age must be a number between 18 and 100.'
   }
-}
+)
+
 
 // --- Form submission & clear ---
 const submitForm = () => {
+  emailAttrs.onBlur()
+  ageAttrs.onBlur()
+
   validateName(true)
   validatePassword(true)
   validateResident(true)
   validateGender(true)
   validateReason(true)
-  validateEmail(true)
-  validateAge(true)
 
   if (
     !errors.value.username &&
@@ -257,13 +277,18 @@ const submitForm = () => {
     !errors.value.resident &&
     !errors.value.gender &&
     !errors.value.reason &&
-    !errors.value.email &&
-    !errors.value.age
+    emailError.value === undefined &&
+    ageError.value === undefined
   ) {
-    submittedCards.value.push({ ...formData.value })
+    submittedCards.value.push({
+      ...formData.value,
+      email: email.value,
+      age: age.value
+    })
     clearForm()
   }
 }
+
 
 const clearForm = () => {
   formData.value = {
@@ -271,20 +296,47 @@ const clearForm = () => {
     password: '',
     isAustralian: false,
     gender: '',
-    reason: '',
-    email: '',
-    age: null
+    reason: ''
   }
+
+  email.value = ''
+  age.value = ''
+  emailError.value = undefined
+  ageError.value = undefined
+
   errors.value = {
     username: null,
     password: null,
     resident: null,
     gender: null,
-    reason: null,
-    email: null,
-    age: null
+    reason: null
   }
 }
+
+
+
+
+function createValidator(initialValue, validate, onlyValidatesOnBlur = false) {
+  const value = ref(initialValue)
+  const error = ref(undefined)
+
+  const runValidation = () => {
+    const result = validate(value.value)
+    error.value = result === true ? undefined : result
+  }
+
+  const attrs = {
+    onInput: (event) => {
+      value.value = event.target.value
+      if (!onlyValidatesOnBlur) runValidation()
+    },
+    onBlur: () => runValidation()
+  }
+
+  return [value, error, attrs]
+}
+
+
 </script>
 
 
