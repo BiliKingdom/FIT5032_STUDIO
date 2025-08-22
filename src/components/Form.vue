@@ -1,5 +1,5 @@
-<template>
-  <div class="container mt-5">
+<template> 
+  <div class="container mt-5"> 
     <h1 class="text-center mb-4">User Information Form</h1>
     <form @submit.prevent="submitForm">
       <!-- Username + Password -->
@@ -30,6 +30,36 @@
           <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
         </div>
       </div>
+
+      <!-- Email + Age -->
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          v-model="formData.email"
+          @blur="() => validateEmail(true)"
+          @input="() => validateEmail(false)"
+        />
+        <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+      </div>
+
+      <!-- Age -->
+      <div class="mb-3">
+        <label for="age" class="form-label">Age</label>
+        <input
+          type="number"
+          class="form-control"
+          id="age"
+          v-model="formData.age"
+          @blur="() => validateAge(true)"
+          @input="() => validateAge(false)"
+        />
+        <div v-if="errors.age" class="text-danger">{{ errors.age }}</div>
+      </div>
+
 
       <!-- Resident + Gender -->
       <div class="row mb-3">
@@ -85,31 +115,6 @@
       </div>
     </form>
 
-    <!-- Submitted Cards -->
-    <!-- <div class="row mt-5" v-if="submittedCards.length">
-      <div class="d-flex flex-wrap justify-content-start">
-        <div
-          v-for="(card, index) in submittedCards"
-          :key="index"
-          class="card m-2"
-          style="width: 18rem"
-        >
-          <div class="card-header">User Information</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">Username: {{ card.username }}</li>
-            <li class="list-group-item">Password: {{ card.password }}</li>
-            <li class="list-group-item">
-              Australian Resident: {{ card.isAustralian ? 'Yes' : 'No' }}
-            </li>
-            <li class="list-group-item">Gender: {{ card.gender }}</li>
-            <li class="list-group-item">Reason: {{ card.reason }}</li>
-          </ul>
-        </div>
-      </div>
-    </div> -->
-
-
-
     <!-- DataTable -->
     <DataTable
       v-if="submittedCards.length"
@@ -127,11 +132,12 @@
       </Column>
       <Column field="gender" header="Gender" />
       <Column field="reason" header="Reason" />
+      <Column field="email" header="Email" />
+      <Column field="age" header="Age" />
     </DataTable>
-
-
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue'
@@ -140,8 +146,10 @@ const formData = ref({
   username: '',
   password: '',
   isAustralian: false,
+  gender: '',
   reason: '',
-  gender: ''
+  email: '',
+  age: null
 })
 
 const submittedCards = ref([])
@@ -151,7 +159,9 @@ const errors = ref({
   password: null,
   resident: null,
   gender: null,
-  reason: null
+  reason: null,
+  email: null,
+  age: null
 })
 
 // --- Validation functions ---
@@ -211,21 +221,44 @@ const validateReason = (blur) => {
   }
 }
 
-// --- Form submission & clear ---
 
+
+const validateEmail = (blur) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(formData.value.email)) {
+    if (blur) errors.value.email = 'Please enter a valid email address.'
+  } else {
+    errors.value.email = null
+  }
+}
+
+const validateAge = (blur) => {
+  const age = Number(formData.value.age)
+  if (!age || isNaN(age) || age < 18 || age > 100) {
+    if (blur) errors.value.age = 'Age must be a number between 18 and 100.'
+  } else {
+    errors.value.age = null
+  }
+}
+
+// --- Form submission & clear ---
 const submitForm = () => {
   validateName(true)
   validatePassword(true)
   validateResident(true)
   validateGender(true)
   validateReason(true)
+  validateEmail(true)
+  validateAge(true)
 
   if (
     !errors.value.username &&
     !errors.value.password &&
     !errors.value.resident &&
     !errors.value.gender &&
-    !errors.value.reason
+    !errors.value.reason &&
+    !errors.value.email &&
+    !errors.value.age
   ) {
     submittedCards.value.push({ ...formData.value })
     clearForm()
@@ -237,15 +270,19 @@ const clearForm = () => {
     username: '',
     password: '',
     isAustralian: false,
+    gender: '',
     reason: '',
-    gender: ''
+    email: '',
+    age: null
   }
   errors.value = {
     username: null,
     password: null,
     resident: null,
     gender: null,
-    reason: null
+    reason: null,
+    email: null,
+    age: null
   }
 }
 </script>
